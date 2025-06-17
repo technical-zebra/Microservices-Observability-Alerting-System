@@ -1,0 +1,40 @@
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: "smtp.gmail.com:587"
+      smtp_from: "terryzhangke@gmail.com"
+      smtp_auth_username: "terryzhangke@gmail.com"
+      smtp_auth_password: "wbitqekahmlyltbh" # ⚠️ Use a Gmail App Password
+      smtp_require_tls: true
+    route:
+      receiver: "default"
+    receivers:
+      - name: "default"
+        email_configs:
+          - to: "terryzhangke@gmail.com"
+            send_resolved: true
+
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: admin123
+  sidecar:
+    dashboards:
+      enabled: true
+    datasources:
+      enabled: true
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: prometheus
+    ruleSelector:
+      matchLabels:
+        role: alert-rules
+
+nodeExporter:
+  enabled: true

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: latency-app-deploy
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: latency-app
+  template:
+    metadata: 
+      labels:
+        app: latency-app
+    spec:
+      containers:
+      - name: latency-app
+        image: tz20123/http-echo-latency
+        ports:
+        - containerPort: 8082
+

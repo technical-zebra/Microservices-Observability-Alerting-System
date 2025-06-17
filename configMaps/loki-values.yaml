@@ -1,0 +1,41 @@
+loki:
+  config:
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 7d
+
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    positions:
+      filename: /tmp/positions.yaml
+    scrape_configs:
+      - job_name: kubernetes-logging-app
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          # Keep only pods with label app=logging-app
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: logging-app
+          # Keep only pods in namespace monitoring
+          - source_labels: [__meta_kubernetes_namespace]
+            action: keep
+            regex: monitoring
+          # Add labels to logs for easier querying in Loki
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+  extraVolumeMounts:
+    - name: promtail-data
+      mountPath: /tmp
+
+  extraVolumes:
+    - name: promtail-data
+      persistentVolumeClaim:
+        claimName: promtail-pvc
