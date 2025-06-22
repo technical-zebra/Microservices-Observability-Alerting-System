@@ -1,0 +1,31 @@
+# ServiceMonitor to scrape the metrics from the latency app
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: latency-app
+  labels:
+    release: prometheus # matches your prometheus helm release label
+spec:
+  selector:
+    matchLabels:
+      app: latency-app
+  endpoints:
+    - port: http
+      interval: 10s
+      path: /metrics
+---
+# ServiceMonitor to scrape the metrics from the metrics exporter
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: metrics-exporter
+  namespace: monitoring
+  labels:
+    release: prometheus  # This should match your Prometheus selector
+spec:
+  selector:
+    matchLabels:
+      app: metrics-exporter
+  endpoints:
+  - port: metrics
+    interval: 15s

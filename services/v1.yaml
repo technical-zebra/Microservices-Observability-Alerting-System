@@ -1,0 +1,33 @@
+# Expose the latency application and its metrics
+apiVersion: v1
+kind: Service
+metadata:
+  name: latency-app
+  namespace: monitoring
+  labels:
+    app: latency-app
+spec:
+  selector:
+    app: latency-app
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+      name: http
+  type: ClusterIP
+---
+# Metrics Exporter Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-exporter
+  namespace: monitoring
+  labels:
+    app: metrics-exporter
+spec:
+  ports:
+  - port: 8082
+    targetPort: 8082
+    name: metrics
+  selector:
+    app: metrics-exporter

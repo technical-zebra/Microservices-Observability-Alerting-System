@@ -1,3 +1,4 @@
+# Latency mock application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,9 +15,12 @@ spec:
         app: latency-app
     spec:
       containers:
-        - name: latency-app
-          image: tz20123/http-echo-latency
+      - name: latency-app
+        image: tz20123/latency-exporter
+        ports:
+        - containerPort: 8082
 ---
+# Logging mock application
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,7 +41,46 @@ spec:
           image: mingrammer/flog:0.4.3
           args:
           - --loop
+          - --format=json
           - --number=10  # number of log lines per second
-          - --delay=500ms
+          - --delay=100ms
+          - --output=/var/log/generated-logs.txt
+          - --overwrite
+          - --type=log
+          volumeMounts:
+          - name: log-storage
+            mountPath: /var/log
+      volumes:
+      - name: log-storage
+        persistentVolumeClaim:
+          claimName: logs-volume
 ---
-
+# Log Metrics Exporter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-exporter
+  template:
+    metadata:
+      labels:
+        app: metrics-exporter
+    spec:
+      containers:
+      - name: metrics-exporter
+        image: rslim087/metrics-exporter:latest
+        ports:
+        - containerPort: 8082
+          name: metrics
+        volumeMounts:
+        - name: log-storage
+          mountPath: /var/log
+      volumes:
+      - name: log-storage
+        persistentVolumeClaim:
+          claimName: logs-volume

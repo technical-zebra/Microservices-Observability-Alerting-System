@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: custom-node-alerts
-  namespace: monitoring # change this if you're using another namespace
+  namespace: monitoring
   labels:
     role: alert-rules
 spec:

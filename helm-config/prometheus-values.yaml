@@ -4,9 +4,9 @@ alertmanager:
     global:
       resolve_timeout: 5m
       smtp_smarthost: "smtp.gmail.com:587"
-      smtp_from: "terryzhangke@gmail.com"
-      smtp_auth_username: "terryzhangke@gmail.com"
-      smtp_auth_password: "wbitqekahmlyltbh" # ⚠️ Use a Gmail App Password
+      smtp_from: "email@gmail.com"
+      smtp_auth_username: "email@gmail.com"
+      smtp_auth_password: "#########" # ⚠️ Use a Gmail App Password Here
       smtp_require_tls: true
     route:
       receiver: "default"
