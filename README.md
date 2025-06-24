@@ -16,8 +16,7 @@ helm install loki grafana/loki --version 6.29.0 -f ./helm-config/loki-values.yam
 
 ## Installing kube-prometheus-stack
 
-helm install kube-prometheus prometheus-community/kube-prometheus-stack --version 45.7.1 \
--f ./helm-config/prometheus-values.yaml -n monitoring
+helm install kube-prometheus prometheus-community/kube-prometheus-stack --version 45.7.1 -f ./helm-config/prometheus-values.yaml -n monitoring
 
 # Installing promtail
 

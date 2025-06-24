@@ -1,31 +1,32 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: custom-node-alerts
+  name: custom-critical-alerts
   namespace: monitoring
   labels:
     role: alert-rules
+    prometheus: kube-prometheus
 spec:
   groups:
-    - name: node_alerts
+    - name: top_alerts
       rules:
-        - alert: HighMemoryUsage
-          expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        - alert: HighLatencyOnCheckout
+          expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="checkout"}[5m])) > 2
           for: 2m
           labels:
-            severity: warning
+            severity: critical
           annotations:
-            summary: "High Memory usage on {{ $labels.instance }}"
-            description: "Memory usage is above 80% for more than 2 minutes."
+            summary: "High checkout latency (p95)"
+            description: "95th percentile latency > 2s for job=checkout"
 
-        - alert: DiskPressure
-          expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        - alert: High5xxErrorRate
+          expr: sum(rate(http_requests_total{status=~"5.."}[1m])) by (service) > 5
           for: 1m
           labels:
             severity: critical
           annotations:
-            summary: "Disk pressure on node {{ $labels.node }}"
-            description: "Node {{ $labels.node }} is under disk pressure."
+            summary: "High 5xx error rate on service {{ $labels.service }}"
+            description: "More than 5 5xx responses/sec for service {{ $labels.service }}"
 
         - alert: PodCrashLooping
           expr: increase(kube_pod_container_status_restarts_total[5m]) > 3
@@ -35,3 +36,21 @@ spec:
           annotations:
             summary: "Pod crash looping in {{ $labels.namespace }}"
             description: "Container {{ $labels.container }} in pod {{ $labels.pod }} restarted more than 3 times in 5 minutes."
+
+        - alert: HighMemoryUsage
+          expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High Memory usage on {{ $labels.instance }}"
+            description: "Memory usage above 85% for more than 2 minutes."
+
+        - alert: NodeDiskPressure
+          expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk pressure on node {{ $labels.node }}"
+            description: "Node {{ $labels.node }} is reporting disk pressure condition"
